@@ -7,3 +7,4 @@ COPY startup.sh /etc/scripts/startup.sh
 RUN chgrp -R 0 /etc/scripts/ && \
     chmod -R g=u /etc/scripts/
 USER 1001
+CMD ["/etc/scripts/startup.sh"]
