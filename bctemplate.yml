@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: service-cert-template
+  annotations:
+    description: Template to add keystore/ trust store to Java Image
+objects:
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    name: ${NAME}
+  spec:
+    lookupPolicy:
+      local: true
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    name: ${ORIGINAL_IMAGE_NAME}
+  spec:
+    dockerImageRepository: ${DOCKER_IMAGE}
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    name: ${NAME}
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: ${NAME}:latest
+    source:
+      type: Binary
+    strategy:
+      dockerStrategy:
+        env:
+        - name: OCP_VERSION
+          value: "${VERSION}"
+        from:
+          kind: DockerImage
+          name: ${DOCKER_IMAGE}
+      type: Docker
+    triggers:
+    - type: ConfigChange
+    - imageChange: {}
+      type: ImageChange
+parameters:
+- name: NAME
+  displayName: Name
+  description: Name Applied to the Resulting ImageStream and BuildConfig
+  value: amq63-openshift-cert
+  required: true
+- name: VERSION
+  displayName: OpenShift Container Platform Version
+  description: Version of the OpenShift Container Platform
+  value: "3.6"
+  required: true
+- name: DOCKER_IMAGE
+  displayName: Java Image to add Keystore/ Trust store to
+  value: registry.access.redhat.com/jboss-amq-6/amq63-openshift
+  required: true
+- name: ORIGINAL_IMAGE_NAME
+  displayName: Short name of the image to be layered on
+  value: amq63-openshift
+  required: true
